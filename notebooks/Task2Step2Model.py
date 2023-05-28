@@ -159,4 +159,4 @@ for i in range(4,10):
             plt.savefig(f'../figs/model2/{tn}_features.png')
 
             final = finalize_model(model)
-            save_model(final, f'../model2/{tn}')
+            save_model(final, f'../models/task2/{tn}')
