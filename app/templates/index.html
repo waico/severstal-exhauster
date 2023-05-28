@@ -284,7 +284,7 @@
                     getFirstDate() {
 
                         query = `SELECT DT FROM "${this.dataset.path}" ORDER BY DT DESC LIMIT 1`;
-                        axios.get(`/datasets/${this.dataset.id}`, { params: {query: query} }).then((response) => {
+                        axios.get(`/datasets/${this.dataset.id}/`, { params: {query: query} }).then((response) => {
                             var dt = JSON.parse(response.data).DT[0];
                             this.dateFrom = new Date(dt).toISOString().substr(0, 10)
                         });
