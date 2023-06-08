@@ -41,8 +41,14 @@ parser.add_argument('-ed', '--enddate', nargs=1, dest='END_DATE', required=False
 parse = parser.parse_args()
 params = vars(parse)
 
-START_DATE = params['START_DATE'][0]
-END_DATE = params['END_DATE'][0]
+if type(params['START_DATE']) == list:
+    START_DATE = params['START_DATE'][0]
+else:
+    START_DATE = params['START_DATE']
+if type(params['END_DATE']) == list:
+    END_DATE = params['END_DATE'][0]
+else:
+    END_DATE = params['END_DATE']
 PATH_DIR_DATA_RAW = params['PATH_DIR_DATA_RAW']
 PATH_DIR_DATA_RESULTS = params['PATH_DIR_DATA_RESULTS']
 
@@ -209,26 +215,28 @@ def plot_m3(exh_number, y_m3):
         fig.savefig(f'figs/{exh_number}_m3.png')
         plt.close()
 
-def plot_rul(exh_number, y_rul):
+def rul(exh_number, y_rul):
     mask = y_rul[y_rul!=2592000].sum(axis=0, numeric_only=True)>0
     rul_malf = y_rul[y_rul!=2592000].sum(axis=0, numeric_only=True)[mask]
     cols = rul_malf.index.to_list()
     ccols = [s for s in cols if f'№{exh_number}' in s]
-    if len(ccols) > 0:
-        fig, ax = plt.subplots(figsize=(18,3))
-        (y_rul.set_index('DT')[ccols]/60/60/24).plot(ax=ax)
-        plt.legend()
-        plt.ylabel('Осталось дней до неисправности')
-        fig.savefig(f'figs/{exh_number}_rul.png')
-        plt.close()
-        y_rul.set_index('DT')[ccols].plot()
+    min_days = y_rul[ccols].min().min()/60/60/24
+    return min_days
+    # if len(ccols) > 0:
+    #     fig, ax = plt.subplots(figsize=(18,3))
+    #     (y_rul.set_index('DT')[ccols]/60/60/24).plot(ax=ax)
+    #     plt.legend()
+    #     plt.ylabel('Осталось дней до неисправности')
+    #     fig.savefig(f'figs/{exh_number}_rul.png')
+    #     plt.close()
+    #     y_rul.set_index('DT')[ccols].plot()
 
     
 
 def generate_exh_page(exh_number, telemetry, y_m3, y_rul):
     plot_telemetry(telemetry, exh_number)
     plot_m3(exh_number, y_m3)
-    plot_rul(exh_number, y_rul)
+    min_rul = rul(exh_number, y_rul)
 
     Story = []
     exh_name = f'ЭКСГАУСТЕР {exh_number}'
@@ -244,14 +252,17 @@ def generate_exh_page(exh_number, telemetry, y_m3, y_rul):
     Story.append(_add_image(f'figs/{exh_number}_temp.png'))
     Story.append(_add_image(f'figs/{exh_number}_current.png'))
     Story.append(_add_image(f'figs/{exh_number}_oil_pr.png'))
-
+    
+    Story.append(Spacer(1, 40))
     Story.append(Paragraph('Неисправности M1', sub_centered))
     # Story.append(Spacer(1, 4))
-    if os.path.exists(f'figs/{exh_number}_rul.png'):
-        Story.append(_add_image(f'figs/{exh_number}_rul.png'))
-    else:
-        Story.append(Paragraph('Неисправности типа М1 на горизонте 30 дней не обнаружены', paragraph))
-
+    # if os.path.exists(f'figs/{exh_number}_rul.png'):
+    #     Story.append(_add_image(f'figs/{exh_number}_rul.png'))
+    # else:
+    #     Story.append(Paragraph('Неисправности типа М1 на горизонте 30 дней не обнаружены', paragraph))
+    Story.append(Paragraph(f'До наступления неисправности типа М1 {min_rul:.1f} дней.', paragraph))
+    
+    Story.append(Spacer(1, 40))
     Story.append(Paragraph('Неисправности M3', sub_centered))
     # Story.append(Spacer(1, 4))
     if os.path.exists(f'figs/{exh_number}_m3.png'):
