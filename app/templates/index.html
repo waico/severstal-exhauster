@@ -13,162 +13,203 @@
                 </v-navigation-drawer>
               
                 <v-app-bar app>
-                    <v-col>
-                        <v-btn href="/docs" target="_blank" small>
-                            Swagger
-                        </v-btn>
-                    </v-col>  
+                    <v-container>
+                        <v-row>
+                            <v-col>
+                                <v-img
+                                        class="white--text align-start"
+                                        :width="50"
+                                        src="static/severstal.png"
+                                        >
+                            </v-col>
+                            <v-col></v-col>
+                            <v-col>
+                                <div class="float-right">
+                                    <v-btn @click="dataDriftDialog = true" color="teal" outlined class="mr-2">
+                                        Мониторинг
+                                    </v-btn>
+                                    <v-btn href="/docs" target="_blank" small class="primary">
+                                        Swagger
+                                    </v-btn>
+                                </div>
+                            </v-col> 
+                        </v-row>
+                    </v-container>
                 </v-app-bar>
                 <v-main>
-                    <v-container>
-
-                        <v-row>
-                            <v-col class="d-flex">
-                                <v-dialog
-                                v-model="createDatasetDialog"
-                                width="500">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn
-                                        class="mr-5 mt-2"
-                                        fab
-                                        dark
-                                        small
-                                        color="primary"
-                                        v-bind="attrs"
-                                        v-on="on"
-                                        >
-                                        <v-icon dark>
-                                            mdi-plus
-                                        </v-icon>
-                                    </v-btn>
-                                </template>
-                            
-                                <v-card>
-                                    <v-card-title class="text-h5 grey lighten-2">
-                                    Создание набора данных
-                                    </v-card-title>
-                            
-                                    <v-card-text>
-                                        <v-text-field
-                                            v-model="createDatasetName"
-                                            :counter="10"
-                                            label="Название"
-                                            required
-                                        ></v-text-field>
-                                        <v-text-field
-                                            v-model="createDatasetDescription"
-                                            :counter="10"
-                                            label="Описание"
-                                            required
-                                        ></v-text-field>
-                                        <v-file-input
-                                            v-model="createDatasetFile"
-                                            chips
-                                            label="Parquet файл"
-                                        ></v-file-input>
-                                    </v-card-text>
-                            
-                                    <v-divider></v-divider>
-                            
-                                    <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn
-                                        color="primary"
-                                        text
-                                        @click="createDataset"
-                                        :disabled="!createDatasetName || !createDatasetFile || createDatasetLoading">
-                                        Загрузить
-                                    </v-btn>
-                                    </v-card-actions>
-                                </v-card>
-                                </v-dialog>
-                                <v-select
-                                    v-model="dataset"
-                                    :items="datasets"
-                                    item-text="name"
-                                    item-value="id"
-                                    label="Набор данных"
-                                    @input="changeDataset"></v-select>
-                            </v-col>
-                            <v-col>
-                                <v-menu
-                                    v-model="dateFromMenu"
-                                    :close-on-content-click="false"
-                                    :nudge-right="40"
-                                    transition="scale-transition"
-                                    offset-y
-                                    min-width="auto">
+                    <v-parallax
+                        height="500"
+                        src="https://severstal.com/upload/iblock/403/x212po4htg9snk1hk7w5m8zjmptou4mp/77f73892ad91e97e80703e5321ffeec7.jpg">
+                        <v-container>
+                            <v-row>
+                                <v-col class="d-flex">
+                                    <v-dialog
+                                    v-model="createDatasetDialog"
+                                    width="500">
                                     <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field
-                                        v-model="dateFrom"
-                                        label="Дата с"
-                                        prepend-icon="mdi-calendar"
-                                        readonly
-                                        v-bind="attrs"
-                                        v-on="on"
-                                    ></v-text-field>
+                                        <v-btn
+                                            class="mr-5 mt-2"
+                                            fab
+                                            dark
+                                            small
+                                            color="primary"
+                                            v-bind="attrs"
+                                            v-on="on">
+                                            <v-icon dark>
+                                                mdi-plus
+                                            </v-icon>
+                                        </v-btn>
                                     </template>
-                                    <v-date-picker
-                                        v-model="dateFrom"
-                                        @input="dateFromMenu = false"
-                                        locale="ru-ru"
-                                        ></v-date-picker>
-                                </v-menu>
-                            </v-col>
-                            <v-col>
-                                <v-menu
-                                    v-model="dateFromMenu"
-                                    :close-on-content-click="false"
-                                    :nudge-right="40"
-                                    transition="scale-transition"
-                                    offset-y
-                                    min-width="auto">
-                                    <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field
-                                        v-model="dateFrom"
-                                        label="Дата по"
-                                        prepend-icon="mdi-calendar"
-                                        readonly
-                                        v-bind="attrs"
-                                        v-on="on"
-                                    ></v-text-field>
-                                    </template>
-                                    <v-date-picker
-                                        v-model="dateFrom"
-                                        @input="dateFromMenu = false"
-                                        locale="ru-ru"
-                                        ></v-date-picker>
-                                </v-menu>
-                            </v-col>
-                        </v-row>
-
-                        <h3 class="mb-5">Результаты работы моделей</h3>
-                        <v-row class="mx-1 mb-4">
-                            <v-expansion-panels>
-                                <v-expansion-panel
-                                    v-for="model in models"
-                                    :key="model.id">
-                                    <v-expansion-panel-header>
-                                        [[ model.name ]]
-                                    <template v-slot:actions>
-                                        <v-icon color="success">
-                                            mdi-check
-                                        </v-icon>
-                                    </template>
-                                    </v-expansion-panel-header>
-                                    <v-expansion-panel-content>
-                                        [[ model.description ]]
-                                    </v-expansion-panel-content>
-                                </v-expansion-panel>
-                            </v-expansion-panels>
-                        </v-row>
-
+                                
+                                    <v-card>
+                                        <v-card-title class="text-h5 grey lighten-2">
+                                        Создание набора данных
+                                        </v-card-title>
+                                
+                                        <v-card-text>
+                                            <v-text-field
+                                                v-model="createDatasetName"
+                                                :counter="10"
+                                                label="Название"
+                                                required
+                                            ></v-text-field>
+                                            <v-text-field
+                                                v-model="createDatasetDescription"
+                                                :counter="10"
+                                                label="Описание"
+                                                required
+                                            ></v-text-field>
+                                            <v-file-input
+                                                v-model="createDatasetFile"
+                                                chips
+                                                label="Parquet файл"
+                                            ></v-file-input>
+                                        </v-card-text>
+                                
+                                        <v-divider></v-divider>
+                                
+                                        <v-card-actions>
+                                        <v-spacer></v-spacer>
+                                        <v-btn
+                                            color="primary"
+                                            text
+                                            @click="createDataset"
+                                            :disabled="!createDatasetName || !createDatasetFile || createDatasetLoading">
+                                            Загрузить
+                                        </v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                    </v-dialog>
+                                    <v-select
+                                        v-model="dataset"
+                                        :items="datasets"
+                                        item-text="name"
+                                        item-value="id"
+                                        label="Набор данных"
+                                        @input="changeDataset"></v-select>
+                                </v-col>
+                                <v-col>
+                                    <v-menu
+                                        v-model="dateFromMenu"
+                                        :close-on-content-click="false"
+                                        :nudge-right="40"
+                                        transition="scale-transition"
+                                        offset-y
+                                        min-width="auto">
+                                        <template v-slot:activator="{ on, attrs }">
+                                        <v-text-field
+                                            v-model="dateFrom"
+                                            label="Дата с"
+                                            prepend-icon="mdi-calendar"
+                                            readonly
+                                            v-bind="attrs"
+                                            v-on="on"
+                                        ></v-text-field>
+                                        </template>
+                                        <v-date-picker
+                                            v-model="dateFrom"
+                                            @input="dateFromMenu = false"
+                                            locale="ru-ru"
+                                            ></v-date-picker>
+                                    </v-menu>
+                                </v-col>
+                                <v-col>
+                                    <v-menu
+                                        v-model="dateFromMenu"
+                                        :close-on-content-click="false"
+                                        :nudge-right="40"
+                                        transition="scale-transition"
+                                        offset-y
+                                        min-width="auto">
+                                        <template v-slot:activator="{ on, attrs }">
+                                        <v-text-field
+                                            v-model="dateFrom"
+                                            label="Дата по"
+                                            prepend-icon="mdi-calendar"
+                                            readonly
+                                            v-bind="attrs"
+                                            v-on="on"
+                                        ></v-text-field>
+                                        </template>
+                                        <v-date-picker
+                                            v-model="dateFrom"
+                                            @input="dateFromMenu = false"
+                                            locale="ru-ru"
+                                            ></v-date-picker>
+                                    </v-menu>
+                                </v-col>
+                            </v-row>
+    
+                            <h3 class="mb-5 black--text">Результаты работы моделей</h3>
+                            <v-row class="mx-1 mb-4">
+                                <v-expansion-panels>
+                                    <v-expansion-panel
+                                        v-for="model in models"
+                                        :key="model.id">
+                                        <v-expansion-panel-header>
+                                            [[ model.name ]]
+                                        <template v-slot:actions>
+                                            <v-icon color="success">
+                                                mdi-check
+                                            </v-icon>
+                                        </template>
+                                        </v-expansion-panel-header>
+                                        <v-expansion-panel-content>
+                                            <v-col>
+                                                [[ model.description ]]
+                                            </v-col>
+                                            <v-card-actions>
+                                                <v-spacer></v-spacer>
+                                                <v-btn text color="success">
+                                                  Скачать результаты
+                                                </v-btn>
+                                                <v-btn depressed color="error">
+                                                  Запуск
+                                                </v-btn>
+                                              </v-card-actions>
+                                        </v-expansion-panel-content>
+                                    </v-expansion-panel>
+                                </v-expansion-panels>
+                            </v-row>
+                            <v-row>
+                                <v-col>
+                                    <div class="float-right">
+                                        <v-btn href="http://165.227.132.216:44402/#/models" target="_blank" class="primary">
+                                            Реестр моделей
+                                        </v-btn>
+                                    </div>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    
+                    </v-parallax>
+                        
+                    <v-container class="mt-5">
                         <v-skeleton-loader v-if="loadingDatasets"
                             class="mx-auto"
                             max-width="350"
                             type="article, actions"
                             elevation="2"></v-skeleton-loader>
-
                         <v-row>
                             <v-col v-for="equipment in equipments" :key="equipment.id" cols="4">
                                 <v-card class="mx-auto">
@@ -181,28 +222,176 @@
                                         <v-card-title>[[ equipment.name ]]</v-card-title>
                                         </v-img>
                                     <v-card-text>
-                                        <v-list-item v-for="node in equipment.nodes" :key="node.id">
+                                        <v-list-item v-for="node in equipment.nodes" :key="node.id" selected>
+                                            <v-list-item-icon v-if="error_nodes.includes(node.id)">
+                                                <v-icon color="red">mdi-alert-circle</v-icon>
+                                            </v-list-item-icon>
+                                            <v-list-item-icon v-else>
+                                                <v-icon color="green">mdi-check-circle</v-icon>
+                                            </v-list-item-icon>
                                             <v-list-item-title>[[ node.name ]]</v-list-item-title>
-
-                                            <v-list-item-subtitle class="text-right">
-                                                OK
+                                            <v-list-item-subtitle v-if="error_nodes.includes(node.id)" class="text-right">
+                                                M3
                                             </v-list-item-subtitle>
                                         </v-list-item>                                  
                                     </v-card-text>
                                     <v-divider></v-divider>
                                     <v-card-actions>
-                                        <v-btn text color="teal accent-4">
-                                        Подробнее
+                                        <v-btn text color="teal accent-4" @click="onDetailClick">
+                                            Подробнее
                                         </v-btn>
                                     </v-card-actions>
                                 </v-card>
                             </v-col>
                         </v-row>
+                        <v-row justify="center">
+                            <v-dialog
+                                v-model="detailDialog"
+                                fullscreen
+                                hide-overlay
+                                transition="dialog-bottom-transition">
+                                <v-card>
+                                    <v-toolbar
+                                    dark
+                                    color="primary">
+                                    <v-btn
+                                        icon
+                                        dark
+                                        @click="closeDetailDialog"
+                                    >
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-btn>
+                                    <v-toolbar-title>Информация об узлах агрегата</v-toolbar-title>
+                                    <v-progress-linear
+                                        :active="datasetColumnLoading"
+                                        :indeterminate="datasetColumnLoading"
+                                        absolute
+                                        bottom
+                                        color="amber accent-4"
+                                    ></v-progress-linear>
+                                    <v-spacer></v-spacer>
+                                    <v-toolbar-items>
+                                        <v-btn
+                                        dark
+                                        text
+                                        @click="closeDetailDialog">
+                                        Закрыть
+                                        </v-btn>
+                                    </v-toolbar-items>
+                                    </v-toolbar>
+                                    <v-container>
+                                        <v-select
+                                            v-model="datasetColumn"
+                                            :items="datasetColumns"
+                                            :disabled="datasetColumnLoading"
+                                            label="Узел агрегата"
+                                            @input="onChangeColumn"></v-select>
+
+                                        <h4>Тренды по узлу агрегата</h4>
+                                        <div id="column-graph" class="mb-5"></div>
+
+                                        <h4 class="mb-4">Коэффициент технической готовности</h4>
+                                        <v-row>
+                                            <v-col>
+                                                <div id="column-pie"></div>
+                                            </v-col>
+                                            <v-col>
+                                                <div id="column-bar"></div>
+                                            </v-col>
+                                        </v-row>
+                                    </v-container>
+                                </v-card>
+                            </v-dialog>
+                        </v-row>
+
+                        <!-- MLFlow Dialog -->
+                        <v-row justify="center">
+                            <v-dialog
+                                v-model="mlflowDialog"
+                                fullscreen
+                                hide-overlay
+                                transition="dialog-bottom-transition">
+                                <v-card>
+                                    <v-toolbar
+                                    dark
+                                    color="primary">
+                                    <v-btn
+                                        icon
+                                        dark
+                                        @click="mlflowDialog = false"
+                                    >
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-btn>
+                                    <v-toolbar-title>Реестр моделей</v-toolbar-title>
+                                    <v-spacer></v-spacer>
+                                    <v-toolbar-items>
+                                        <v-btn
+                                        dark
+                                        text
+                                        @click="mlflowDialog = false">
+                                        Закрыть
+                                        </v-btn>
+                                    </v-toolbar-items>
+                                    </v-toolbar>
+                                    <iframe id="ifrm" src="http://165.227.132.216:44402/#/models" width="100%" height="95%"></iframe>
+                                </v-card>
+                            </v-dialog>
+                        </v-row>
+
+                        <v-row justify="center">
+                            <v-dialog
+                                v-model="dataDriftDialog"
+                                fullscreen
+                                hide-overlay
+                                transition="dialog-bottom-transition">
+                                <v-card>
+                                    <v-toolbar
+                                    dark
+                                    color="primary">
+                                    <v-btn
+                                        icon
+                                        dark
+                                        @click="dataDriftDialog = false"
+                                    >
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-btn>
+                                    <v-toolbar-title>Мониторинг</v-toolbar-title>
+                                    <v-spacer></v-spacer>
+                                    <v-toolbar-items>
+                                        <v-btn
+                                        dark
+                                        text
+                                        @click="dataDriftDialog = false">
+                                        Закрыть
+                                        </v-btn>
+                                    </v-toolbar-items>
+                                    </v-toolbar>
+                                    <v-tabs>
+                                        <v-tab>Регрессия</v-tab>
+                                        <v-tab>Классификация</v-tab>
+                                        <v-tab>Дрифт модели</v-tab>
+                                        <v-tab>Дрифт данных</v-tab>
+                                        <v-tab-item>
+                                            <iframe id="ifrm" src="http://165.227.132.216:44401/d/-GLqhe-nz/evidently-regression-performance-dashboard?orgId=1&var-dataset_name=task_two_model&var-feature=All&kiosk" width="100%" height="95%" style="height: 100vh;"></iframe>
+                                        </v-tab-item>
+                                        <v-tab-item>
+                                            <iframe id="ifrm" src="http://165.227.132.216:44401/d/5doIRYank/evidently-classification-performance-dashboard?orgId=1&kiosk" width="100%" height="95%" style="height: 100vh;"></iframe>
+                                        </v-tab-item>
+                                        <v-tab-item>
+                                            <iframe id="ifrm" src="http://165.227.132.216:44401/d/Lz5CrSlnk/evidently-numerical-target-drift-dashboard?orgId=1&var-dataset_name=task_one_model&kiosk" width="100%" height="95%" style="height: 100vh;"></iframe>
+                                        </v-tab-item>
+                                        <v-tab-item>
+                                          <iframe id="ifrm" src="http://165.227.132.216:44401/d/U54hsxv7k/evidently-data-drift-dashboard?orgId=1&refresh=10s&var-dataset_name=task_three_model&kiosk" width="100%" height="95%" style="height: 100vh;"></iframe>
+                                        </v-tab-item>
+                                    </v-tabs>
+                                </v-card>
+                            </v-dialog>
+                        </v-row>
                   </v-container>
                 </v-main>
               
                 <v-footer app>
-                    <v-col>2023 (@) waico for serverstal</v-col>
+                    <v-col align="center"><p class="font-weight-thin mb-1">2023 (c) waico for serverstal</p></v-col>
                 </v-footer>
               </v-app>
         </div>
@@ -211,6 +400,7 @@
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+        <script src="https://cdn.plot.ly/plotly-2.6.3.min.js"></script>
 
         <script>
             new Vue({
@@ -233,9 +423,18 @@
                     datasets: [],
                     dataset: undefined,
                     equipments: [],
+                    error_nodes: [],
 
                     dateFromMenu: false,
-                    dateFrom: undefined // (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+                    dateFrom: undefined,
+
+                    detailDialog: false,
+                    datasetColumns: [],
+                    datasetColumn: undefined,
+                    datasetColumnLoading: false,
+
+                    mlflowDialog: false,
+                    dataDriftDialog: false
                 },
                 methods: {
                     loadDatasets() {
@@ -245,6 +444,7 @@
                             this.dataset = this.datasets[0];
 
                             this.getFirstDate();
+                            this.loadDatasetColumns();
                         });
                     },
                     loadModels() {
@@ -256,6 +456,11 @@
                         axios.get("/equipment/").then((response) => {
                             this.loadingDatasets = false;
                             this.equipments = response.data;
+                            this.error_nodes = [
+                                Math.floor(Math.random() * (42 - 0 + 1)) + 0,
+                                Math.floor(Math.random() * (42 - 0 + 1)) + 0,
+                                Math.floor(Math.random() * (42 - 0 + 1)) + 0
+                            ]
                         });
                     },
                     changeDataset(id) {
@@ -282,14 +487,259 @@
                         });
                     },
                     getFirstDate() {
-
                         query = `SELECT DT FROM "${this.dataset.path}" ORDER BY DT DESC LIMIT 1`;
                         axios.get(`/datasets/${this.dataset.id}/`, { params: {query: query} }).then((response) => {
                             var dt = JSON.parse(response.data).DT[0];
                             this.dateFrom = new Date(dt).toISOString().substr(0, 10)
                         });
+                    },
+                    onDetailClick() {
+                        this.detailDialog = true;
+                        if (this.datasetColumn == null) {
+                            this.datasetColumn = this.datasetColumns[0];
+                        }
+                        this.onChangeColumn(this.datasetColumn);
+                    },
+                    loadDatasetColumns() {
+                        this.datasetColumns = [
+                            'Y_ЭКСГАУСТЕР А/М №9_ЗАПОРНАЯ АРМАТУРА ЭКСГАУСТЕРА №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_МАСЛОСТАНЦИЯ ЖИДКОЙ СМАЗКИ ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ЭЛЕКТРОАППАРАТУРА ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_КЛ1 ТР№9 ДО ЭД ЭКСГАУСТЕРА №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ЭЛЕКТРОДВИГАТЕЛЬ ДСПУ-140-84-4 ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_КОРПУС ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_РЕДУКТОР ГАЗ. ЗАДВИЖКИ ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_МАСЛООХЛАДИТЕЛЬ  М-05-1 ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ЭЛ/ДВИГАТЕЛЬ ГАЗ. ЗАДВИЖКИ ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ЭЛЕКТРООБОРУДОВАНИЯ ЭКСГАУСТЕРА №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ПОДШИПНИК ОПОРНО-УПОРНЫЙ ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_РОТОР ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ТР-Р ТМ-6300-10/6 ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ПОДШИПНИК ОПОРНЫЙ ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_МАСЛОНАСОС РАБОЧИЙ ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ПОДШИПНИК ОПОРНЫЙ №2',
+                            'Y_ЭКСГАУСТЕР А/М №9_ГСМ ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_КОЖУХ МУФТЫ ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ПОДШИПНИК ОПОРНЫЙ №1',
+                            'Y_ЭКСГАУСТЕР А/М №9_ЗАДВИЖКА ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№9 Т.1',
+                            'Y_ЭКСГАУСТЕР А/М №9_МАСЛОПРОВОДЫ ЭКСГАУСТЕРА №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ТИРИСТОРНЫЙ ВОЗБУДИТЕЛЬ ТВ-400 ЭКСГ9 ВУ1',
+                            'Y_ЭКСГАУСТЕР А/М №9_МЕТРАН-100 ДАТЧИКИ ДАВЛЕНИЯ ЭКСГ.№9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ТСМТ-101-010-50М-80 ТЕРМОПРЕОБР.МАСЛО',
+                            'Y_ЭКСГАУСТЕР А/М №9_ТСМТ-101-010-50М-400 ТЕРМОПР.ПОДШ.Т.1',
+                            'Y_ЭКСГАУСТЕР А/М №9_ЭКСГАУСТЕР А/М №9',
+                            'Y_ЭКСГАУСТЕР А/М №9_ДВИГАТЕЛЬ ПУСКОВОГО МАСЛОНАСОСА ЭКСГ. №9',
+                            'Y_ЭКСГАУСТЕР А/М №5_МАСЛООХЛАДИТЕЛЬ  М-05-1 ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ЭЛЕКТРОДВИГАТЕЛЬ ДСПУ-140-84-4 ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_КОРПУС ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ЗАДВИЖКА ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ПОДШИПНИК ОПОРНЫЙ ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ПОДШИПНИК ОПОРНЫЙ №2',
+                            'Y_ЭКСГАУСТЕР А/М №5_ПОДШИПНИК ОПОРНО-УПОРНЫЙ ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_МАСЛОНАСОС ШЕСТЕРЕНЧАТЫЙ (РЕЗ.) ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№5 Т.1',
+                            'Y_ЭКСГАУСТЕР А/М №5_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№5 Т.3',
+                            'Y_ЭКСГАУСТЕР А/М №5_ЭЛЕКТРООБОРУДОВАНИЯ ЭКСГАУСТЕРА №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№5 Т.2',
+                            'Y_ЭКСГАУСТЕР А/М №5_ПОДШИПНИК ОПОРНЫЙ №1',
+                            'Y_ЭКСГАУСТЕР А/М №5_РЕДУКТОР ГАЗ. ЗАДВИЖКИ ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ТИРИСТ. ВОЗБУДИТЕЛЬ ВТ-РЭМ-400 ЭКСГ5 ВУ1',
+                            'Y_ЭКСГАУСТЕР А/М №5_ЗАПОРНАЯ АРМАТУРА ЭКСГАУСТЕРА №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_МАСЛОПРОВОДЫ ЭКСГАУСТЕРА №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ГСМ ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ЭКСГАУСТЕР А/М №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ТСМТ-101-010-50М-80 ТЕРМОПРЕОБР.МАСЛО',
+                            'Y_ЭКСГАУСТЕР А/М №5_ТР-Р ТМ-4000-10/6 ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_КЛ1 ТР№5 ДО ЭД ЭКСГАУСТЕРА №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_КЛ2 ТР№5 ДО ЭД ЭКСГАУСТЕРА №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_МАСЛОНАСОС РАБОЧИЙ ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_РОТОР ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_МЕТРАН-100 ДАТЧИКИ ДАВЛЕНИЯ ЭКСГ.№5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ДВИГАТЕЛЬ ПУСКОВОГО МАСЛОНАСОСА ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ГАЗОВАЯ ЗАДВИЖКА ЭКСГАУСТЕРА А/М №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_КОЖУХ МУФТЫ ЭКСГ. №5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ТИРИСТ. ВОЗБУДИТЕЛЬ ВТ-РЭМ-400 ЭКСГ5 ВУ2',
+                            'Y_ЭКСГАУСТЕР А/М №5_ТСМТ-101-010-50М-400 ТЕРМОПР.ПОДШ.Т.2',
+                            'Y_ЭКСГАУСТЕР А/М №5_ДВИГАТЕЛЬ РЕЗЕРВНОГО МАСЛОНАСОСА ЭКСГ.№5',
+                            'Y_ЭКСГАУСТЕР А/М №5_ТСМТ-101-010-50М-200 ТЕРМОПР.ПОДШ.Т.3',
+                            'Y_ЭКСГАУСТЕР А/М №5_ЭКСГАУСТЕР Н-8000 А/М №5',
+                            'Y_ЭКСГАУСТЕР А/М №8_РОТОР ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ЭЛЕКТРОДВИГАТЕЛЬ ДСПУ-140-84-4 ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_КОРПУС ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_РЕДУКТОР ГАЗ. ЗАДВИЖКИ ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№8 Т.3',
+                            'Y_ЭКСГАУСТЕР А/М №8_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№8 Т.4',
+                            'Y_ЭКСГАУСТЕР А/М №8_ЭЛ/ДВИГАТЕЛЬ ГАЗ. ЗАДВИЖКИ ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_МАСЛООХЛАДИТЕЛЬ  М-05-1 ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ТИРИСТОРНЫЙ ВОЗБУДИТЕЛЬ СПВД-М10-400-5',
+                            'Y_ЭКСГАУСТЕР А/М №8_КЛ2 ТР№8 ДО ЭД ЭКСГАУСТЕРА №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_КЛ1 ТР№8 ДО ЭД ЭКСГАУСТЕРА №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ТСМТ-101-010-50М-400 ТЕРМОПР.ПОДШ.Т.2',
+                            'Y_ЭКСГАУСТЕР А/М №8_КОЖУХ МУФТЫ ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ГСМ ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ПОДШИПНИК ОПОРНЫЙ №2',
+                            'Y_ЭКСГАУСТЕР А/М №8_ЭКСГАУСТЕР А/М №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ЗАПОРНАЯ АРМАТУРА ЭКСГАУСТЕРА №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ТСМТ-101-010-50М-200 ТЕРМОПР.ПОДШ.Т.4',
+                            'Y_ЭКСГАУСТЕР А/М №8_МАСЛЯНЫЙ ФИЛЬТР ЭКСГАУСТЕРА №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ТИРИСТОРНЫЙ ВОЗБУДИТЕЛЬ ТВ-400 ЭКСГ8 ВУ1',
+                            'Y_ЭКСГАУСТЕР А/М №8_ПОДШИПНИК ОПОРНЫЙ №1',
+                            'Y_ЭКСГАУСТЕР А/М №8_ЭЛЕКТРООБОРУДОВАНИЯ ЭКСГАУСТЕРА №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ПОДШИПНИК ОПОРНЫЙ ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ЗАДВИЖКА ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_МАСЛОНАСОС РАБОЧИЙ ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_МАСЛОНАСОС ШЕСТЕРЕНЧАТЫЙ (РЕЗ.) ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_МАСЛОНАСОС ШЕСТЕРЕНЧАТЫЙ (ПУСК.) ЭКСГ.№8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№8 Т.2',
+                            'Y_ЭКСГАУСТЕР А/М №8_ТР-Р ТМ-6300-10/6 ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_ПОДШИПНИК ОПОРНО-УПОРНЫЙ ЭКСГ. №8',
+                            'Y_ЭКСГАУСТЕР А/М №8_МАСЛОПРОВОДЫ ЭКСГАУСТЕРА №8',
+                            'Y_ЭКСГАУСТЕР А/М №4_ЭЛЕКТРОДВИГАТЕЛЬ ДСПУ-140-84-4 ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ПОДШИПНИК ОПОРНЫЙ ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_УЛИТА ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_РЕДУКТОР ГАЗ. ЗАДВИЖКИ ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_МАСЛОНАСОС РАБОЧИЙ ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ЭЛЕКТРОАППАРАТУРА ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ПОДШИПНИК ОПОРНЫЙ №2 ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ЗАДВИЖКА ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ГСМ ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№4 Т.1',
+                            'Y_ЭКСГАУСТЕР А/М №4_ТСМТ-101-010-50М-400 ТЕРМОПР.ПОДШ.Т.1',
+                            'Y_ЭКСГАУСТЕР А/М №4_РОТОР ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_МАСЛООХЛАДИТЕЛЬ  М-05-1 ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ПОДШИПНИК ОПОРНО-УПОРНЫЙ ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ЭКСГАУСТЕР А/М №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ЗАП. И РЕГ. АРМАТУРА ЭКСГ.№4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ПОДШИПНИК ОПОРНЫЙ №1 ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ЭЛ/ДВИГАТЕЛЬ ГАЗ. ЗАДВИЖКИ ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_КЛ1 ТР№4 ДО ЭД ЭКСГАУСТЕРА №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_КЛ2 ТР№4 ДО ЭД ЭКСГАУСТЕРА №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ТР-Р ТМ-4000-10/6 ЭКСГ. №4',
+                            'Y_ЭКСГАУСТЕР А/М №4_ТИРИСТ. ВОЗБУДИТЕЛЬ ВТ-РЭМ-400 ЭКСГ4 ВУ1',
+                            'Y_ЭКСГАУСТЕР А/М №4_МАСЛОПРОВОДЫ ЭКСГ №4',
+                            'Y_ЭКСГАУСТЕР А/М №7_ЭЛЕКТРОДВИГАТЕЛЬ ДСПУ-140-84-4 ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_КОРПУС ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ПОДШИПНИК ОПОРНЫЙ №1',
+                            'Y_ЭКСГАУСТЕР А/М №7_ЗАДВИЖКА ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ПОДШИПНИК ОПОРНЫЙ №2',
+                            'Y_ЭКСГАУСТЕР А/М №7_РОТОР ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ПОДШИПНИК ОПОРНО-УПОРНЫЙ ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№7 Т.3',
+                            'Y_ЭКСГАУСТЕР А/М №7_РЕДУКТОР ГАЗ. ЗАДВИЖКИ ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ТСМТ-101-010-50М-80 ТЕРМОПРЕОБР.МАСЛО',
+                            'Y_ЭКСГАУСТЕР А/М №7_ПОДШИПНИК ОПОРНЫЙ ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ГСМ ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_КОЖУХ МУФТЫ ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ЭКСГАУСТЕР А/М №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_МАСЛОПРОВОДЫ ЭКСГАУСТЕРА №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_МАСЛООХЛАДИТЕЛЬ  М-05-1 ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_САПФИР 22 МДД ПЕРЕПАД ДАВЛ. НА ЦИКЛОНЕ',
+                            'Y_ЭКСГАУСТЕР А/М №7_ЭЛЕКТРООБОРУДОВАНИЯ ЭКСГАУСТЕРА №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_МАСЛОНАСОС РАБОЧИЙ ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_МАСЛОНАСОС ШЕСТЕРЕНЧАТЫЙ (ПУСК.) ЭКСГ.№7',
+                            'Y_ЭКСГАУСТЕР А/М №7_МАСЛЯНЫЙ ФИЛЬТР ЭКСГАУСТЕРА №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ТР-Р ТМ-4000-10/6 ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ТСМТ-101-010-50М-200 ТЕРМОПР.ПОДШ.Т.3',
+                            'Y_ЭКСГАУСТЕР А/М №7_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№7 Т.2',
+                            'Y_ЭКСГАУСТЕР А/М №7_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№7 Т.4',
+                            'Y_ЭКСГАУСТЕР А/М №7_ТИРИСТОРНЫЙ ВОЗБУДИТЕЛЬ ТВ-400 ЭКСГ7 ВУ1',
+                            'Y_ЭКСГАУСТЕР А/М №7_ТСМТ-101-010-50М-400 ТЕРМОПР.ПОДШ.Т.2',
+                            'Y_ЭКСГАУСТЕР А/М №7_КЛ1 ТР№7 ДО ЭД ЭКСГАУСТЕРА №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_МЕТРАН-100 ДАТЧИКИ ДАВЛЕНИЯ ЭКСГ.№7',
+                            'Y_ЭКСГАУСТЕР А/М №7_РЕГУЛИРУЮЩАЯ АППАРАТУРА ЭКСГАУСТЕРА №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ЭЛ/ДВИГАТЕЛЬ ГАЗ. ЗАДВИЖКИ ЭКСГ. №7',
+                            'Y_ЭКСГАУСТЕР А/М №7_ТСМТ-101-010-50М-400 ТЕРМОПР.ПОДШ.Т.1',
+                            'Y_ЭКСГАУСТЕР А/М №6_ЭЛЕКТРОДВИГАТЕЛЬ ДСПУ-140-84-4 ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_КОРПУС ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ЗАДВИЖКА ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ПОДШИПНИК ОПОРНЫЙ №2',
+                            'Y_ЭКСГАУСТЕР А/М №6_РЕДУКТОР ГАЗ. ЗАДВИЖКИ ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ПОДШИПНИК ОПОРНО-УПОРНЫЙ ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_САПФИР 22 МДД РАЗРЕЖЕНИЕ В КОЛЛЕКТОРЕ',
+                            'Y_ЭКСГАУСТЕР А/М №6_МАСЛОБАК ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ПОДШИПНИК ОПОРНЫЙ №1',
+                            'Y_ЭКСГАУСТЕР А/М №6_КОЖУХ МУФТЫ ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_РОТОР ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ТР-Р ТМ-4000-10/6 ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ЭЛЕКТРООБОРУДОВАНИЯ ЭКСГ №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_МАСЛООХЛАДИТЕЛЬ  М-05-1 ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_САПФИР 22 МДД ПЕРЕПАД ДАВЛ. НА ЦИКЛОНЕ',
+                            'Y_ЭКСГАУСТЕР А/М №6_МАСЛОНАСОС РАБОЧИЙ ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ГАЗОВАЯ ЗАДВИЖКА ЭКСГАУСТЕРА А/М №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ЭКСГАУСТЕР А/М №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ПОДШИПНИК ОПОРНЫЙ ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ТИРИСТОРНЫЙ ВОЗБУДИТЕЛЬ ТВ-400 ЭКСГ6 ВУ1',
+                            'Y_ЭКСГАУСТЕР А/М №6_ДВИГАТЕЛЬ ПУСКОВОГО МАСЛОНАСОСА ЭКСГ. №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_МАСЛОНАСОС ШЕСТЕРЕНЧАТЫЙ (ПУСК.) ЭКСГ.№6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№6 Т.3',
+                            'Y_ЭКСГАУСТЕР А/М №6_МАСЛОПРОВОДЫ ЭКСГ №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_КЛ1 ТР№6 ДО ЭД ЭКСГАУСТЕРА №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_КЛ2 ТР№6 ДО ЭД ЭКСГАУСТЕРА №6',
+                            'Y_ЭКСГАУСТЕР А/М №6_ВК 310С ВИБРОПРЕОБРАЗОВАТЕЛЬ ЭКСГ.№6 Т.2'
+                        ]
+                        this.datasetColumn = this.datasetColumns[0];
+                    },
+                    onChangeColumn(name) {
+                        this.datasetColumnLoading = true;
+                        var query = `SELECT DT, "${name}" FROM "${this.dataset.path}" ORDER BY DT`
+                        axios.get(`/datasets/${this.dataset.id}/`, { params: {query: query} }).then((response) => {
+                            
+                            this.datasetColumnLoading = false;
+                            
+                            var data = JSON.parse(response.data);
+                            var dt = Object.values(data['DT'])
+                            var vals = Object.values(data[name])
+                            
+                            var data = [{
+                                x: dt,
+                                y: vals,
+                                type: 'scater'
+                            }];
+
+                            layout = {
+                                margin: {
+                                    l: 60,
+                                    r: 10,
+                                    b: 0,
+                                    t: 10,
+                                    pad: 4
+                                },
+                                showlegend: false,
+                                colorway : this.colorway_second
+                            };
+
+                            var count = {};
+                            vals.forEach(function(i) { count[i] = (count[i]||0) + 1;});
+
+                            Plotly.newPlot('column-graph', data, layout, { responsive: true });
+
+                            var data = [{
+                                values: Object.values(count),
+                                labels: Object.keys(count),
+                                type: 'pie'
+                            }];
+
+                            Plotly.newPlot('column-pie', data, layout);
+
+                            var data = [
+                                {
+                                    x: Object.keys(count),
+                                    y: Object.values(count),
+                                    type: 'bar'
+                                }
+                            ];
+
+                            Plotly.newPlot('column-bar', data, layout);
+                        });
+                    },
+                    closeDetailDialog() {
+                        this.detailDialog = false;
+                        this.datasetColumn = undefined;
+                        Plotly.restyle('column-graph', {"visible": false});
+                        Plotly.restyle('column-bar', {"visible": false});
+                        Plotly.restyle('column-pie', {"visible": false});
                     }
-                    
                 },
                 mounted() {
                     this.loadDatasets();

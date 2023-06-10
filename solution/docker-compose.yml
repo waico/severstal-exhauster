@@ -1,0 +1,104 @@
+version: "3.9"
+
+services:
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    container_name: waico-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=waico_minio
+      - MINIO_ROOT_PASSWORD=waico_minio_password
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_volume:/data
+
+  postgres:
+    image: postgres:latest
+    container_name: waico-postgres
+    environment:
+      - "POSTGRES_USER=mlflow"
+      - "POSTGRES_PASSWORD=mlflow_pass"
+    volumes: 
+      - postgres_volume:/var/lib/postgresql/data
+
+  mlflow:
+    container_name: waico-mlflow
+    image: waico-mlflow
+    restart: unless-stopped
+    build:
+      context: ./mlflow
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - AWS_ACCESS_KEY_ID=waico_minio
+      - AWS_SECRET_ACCESS_KEY=waico_minio_password
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+    entrypoint: mlflow server --backend-store-uri postgresql://mlflow:mlflow_pass@postgres:5432 --default-artifact-root s3://mlflow -p 4000 -h 0.0.0.0
+    depends_on:
+      - "postgres"
+
+  create_s3_buckets:
+    image: minio/mc
+    container_name: waico-s3-init
+    depends_on:
+      - "minio"
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set minio http://minio:9000 'waico_minio' 'waico_minio_password') do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc mb minio/mlflow;
+      exit 0;
+      "
+  
+  evidently_service:
+    build:
+      context: ./metrics_app
+      dockerfile: Dockerfile
+    container_name: waico-evidently-service
+    depends_on:
+      - grafana
+    volumes:
+      - ./datasets:/app/datasets
+    ports:
+      - "8085:8085"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: waico-prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_volume:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    restart: always
+
+  grafana:
+    image: grafana/grafana
+    container_name: waico-grafana
+    user: "472"
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+       - GF_AUTH_ANONYMOUS_ENABLED=true
+       - GF_SECURITY_ALLOW_EMBEDDING=true
+       - GF_USERS_DEFAULT_THEME=light
+    volumes:
+      - ./config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
+      - ./config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./dashboards:/opt/grafana/dashboards
+      - grafana_volume:/var/lib/grafana
+    restart: always
+
+volumes:
+  postgres_volume:
+  minio_volume:
+  prometheus_volume:
+  grafana_volume:

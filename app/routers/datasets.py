@@ -1,4 +1,5 @@
 import duckdb
+import pandas as pd
 
 from typing import List
 from fastapi import APIRouter, UploadFile
@@ -42,7 +43,9 @@ async def query(dataset_id: int, query: str):
     duckdb.read_parquet(dataset.path)
     
     df = duckdb.sql(query).df()
-    return df.to_json()
+    df.set_index('DT', inplace=True)
+    df = df.resample('1d').max()
+    return df.reset_index().to_json()
 
 
 @router.post("/{dataset_id}/upload/")

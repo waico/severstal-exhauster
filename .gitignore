@@ -36,6 +36,8 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+solution/scripts/
+solution/datasets/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -87,3 +89,4 @@ target/
 
 # Keep statics
 !/app/static/exhauster.png
+!/app/static/severstal.png
