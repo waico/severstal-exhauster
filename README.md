@@ -13,6 +13,8 @@ __Результаты прогнозов на приватной выборке
 -  [Задача 2](https://cloud.mail.ru/public/xNtu/Rz94iFcyd)
 -  [Задача 3](https://drive.google.com/file/d/1RxTsrN7vPmGlcBILJBOIOlbwZk61_Svu/view)
 
+-  [Задача 1 Переразмеченный М1](/data/submissions//Processed_toir2.xlsx)
+
 ## Структура Репозитория
 
 ```

@@ -90,3 +90,6 @@ target/
 # Keep statics
 !/app/static/exhauster.png
 !/app/static/severstal.png
+
+# Keep submission
+!/data/submissions/Processed_toir2.xlsx
